@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D9AB2649-CF1F-4916-87EC-8214534DE9C8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Leestar54.WeChat.WebAPI</RootNamespace>
+    <AssemblyName>Leestar54.WeChat.WebAPI</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="HttpClient.cs" />
+    <Compile Include="Modal\AddMsgList.cs" />
+    <Compile Include="Modal\AppInfo.cs" />
+    <Compile Include="Modal\BaseRequest.cs" />
+    <Compile Include="Modal\BaseResponse.cs" />
+    <Compile Include="Modal\Contact.cs" />
+    <Compile Include="Modal\Msg.cs" />
+    <Compile Include="Modal\RecommendInfo.cs" />
+    <Compile Include="Modal\Request\BatchGetContactRequest.cs" />
+    <Compile Include="Modal\Request\CreateChatRoomRequest.cs" />
+    <Compile Include="Modal\Request\OpLogRequest.cs" />
+    <Compile Include="Modal\Request\SendImgMsgRequest.cs" />
+    <Compile Include="Modal\Request\SendMsgRequest.cs" />
+    <Compile Include="Modal\Request\SyncRequest.cs" />
+    <Compile Include="Modal\Request\UpdateChatRoomRequest.cs" />
+    <Compile Include="Modal\Request\UploadMediaRequest.cs" />
+    <Compile Include="Modal\Request\VerifyUserRequest.cs" />
+    <Compile Include="Modal\Response\CreateChatRoomResponse.cs" />
+    <Compile Include="Modal\Response\GetContactResponse.cs" />
+    <Compile Include="Modal\Response\InitResponse.cs" />
+    <Compile Include="Modal\Member.cs" />
+    <Compile Include="Modal\MPArticle.cs" />
+    <Compile Include="Modal\Response\BatchGetContactResponse.cs" />
+    <Compile Include="Modal\MPSubscribeMsg.cs" />
+    <Compile Include="Modal\Request\StatusNotifyRequest.cs" />
+    <Compile Include="Modal\Response\SendMsgResponse.cs" />
+    <Compile Include="Modal\Response\SimpleResponse.cs" />
+    <Compile Include="Modal\Response\StatusNotifyResponse.cs" />
+    <Compile Include="Modal\Response\SyncResponse.cs" />
+    <Compile Include="Modal\Response\UpdateChatRoomResponse.cs" />
+    <Compile Include="Modal\Response\UploadMediaResponse.cs" />
+    <Compile Include="Modal\SyncKey.cs" />
+    <Compile Include="Modal\User.cs" />
+    <Compile Include="OtherUtils.cs" />
+    <Compile Include="TEventArgs.cs" />
+    <Compile Include="Client.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
