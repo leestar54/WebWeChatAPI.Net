@@ -176,12 +176,24 @@ namespace Leestar54.WeChat.WebAPI
             {
                 if (baseRequest != null)
                 {
-                    string result = Logout();
-                    asyncOperation.Post(
-                    new SendOrPostCallback((obj) =>
+                    try
                     {
-                        LogoutComplete?.Invoke(this, new TEventArgs<User>((User)obj));
-                    }), user);
+                        string result = Logout();
+                        asyncOperation.Post(
+                        new SendOrPostCallback((obj) =>
+                        {
+                            LogoutComplete?.Invoke(this, new TEventArgs<User>((User)obj));
+                        }), user);
+                    }
+                    catch (Exception e)
+                    {
+                        asyncOperation.Post(
+                        new SendOrPostCallback((obj) =>
+                        {
+                            ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
+                        }), e);
+                        throw e;
+                    }
                 }
             });
         }
@@ -578,14 +590,15 @@ namespace Leestar54.WeChat.WebAPI
                                 }
                                 catch (WebException e)
                                 {
-                                    if (e.Status == WebExceptionStatus.Timeout)
+                                    //为了保证稳定性，轮询过程中的http异常略过
+                                    if (errCount > 3)
                                     {
-                                        continue;
+                                        OtherUtils.Debug("消息轮询异常，15秒钟之后再试");
+                                        Thread.Sleep(15000);
                                     }
-                                    else
-                                    {
-                                        throw e;
-                                    }
+                                    OtherUtils.Debug(e);
+                                    errCount++;
+                                    continue;
                                 }
                                 if (!syncPolling)
                                 {
