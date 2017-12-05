@@ -177,7 +177,7 @@ namespace Leestar54.WeChat.WebAPI
                 if (baseRequest != null)
                 {
                     string result = Logout();
-                    ((AsyncOperation)asyncOperation).Post(
+                    asyncOperation.Post(
                     new SendOrPostCallback((obj) =>
                     {
                         LogoutComplete?.Invoke(this, new TEventArgs<User>((User)obj));
@@ -208,7 +208,7 @@ namespace Leestar54.WeChat.WebAPI
                 }
                 string qrcodeUrl = string.Format("https://login.weixin.qq.com/qrcode/{0}", uuid);
                 Image img = httpClient.GetImage(qrcodeUrl);
-                ((AsyncOperation)asyncOperation).Post(
+                asyncOperation.Post(
                 new SendOrPostCallback((obj) =>
                 {
                     GetLoginQrCodeComplete?.Invoke(this, new TEventArgs<Image>((Image)obj));
@@ -216,7 +216,7 @@ namespace Leestar54.WeChat.WebAPI
             }
             catch (Exception e)
             {
-                ((AsyncOperation)asyncOperation).Post(
+                asyncOperation.Post(
                 new SendOrPostCallback((obj) =>
                 {
                     ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
@@ -262,7 +262,7 @@ namespace Leestar54.WeChat.WebAPI
                             {
                                 userAvatar = Image.FromStream(ms);
                             }
-                            ((AsyncOperation)asyncOperation).Post(
+                            asyncOperation.Post(
                                 new SendOrPostCallback((obj) =>
                                 {
                                     CheckScanComplete?.Invoke(this, new TEventArgs<Image>((Image)obj));
@@ -337,7 +337,7 @@ namespace Leestar54.WeChat.WebAPI
             }
             catch (Exception e)
             {
-                ((AsyncOperation)asyncOperation).Post(
+                asyncOperation.Post(
                 new SendOrPostCallback((obj) =>
                 {
                     ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
@@ -366,13 +366,13 @@ namespace Leestar54.WeChat.WebAPI
                 syncKey = initMsg.SyncKey;
 
                 //初始化的时候会返回一个最近联系人列表，但是主要还是以第一次sync获得的最近联系人为准。
-                ((AsyncOperation)asyncOperation).Post(
+                asyncOperation.Post(
                     new SendOrPostCallback((list) =>
                     {
                         BatchGetContactComplete?.Invoke(this, new TEventArgs<List<Contact>>((List<Contact>)list));
                     }), initMsg.ContactList);
 
-                ((AsyncOperation)asyncOperation).Post(
+                asyncOperation.Post(
                 new SendOrPostCallback((obj) =>
                 {
                     LoginComplete?.Invoke(this, new TEventArgs<User>((User)obj));
@@ -380,7 +380,7 @@ namespace Leestar54.WeChat.WebAPI
             }
             catch (Exception e)
             {
-                ((AsyncOperation)asyncOperation).Post(
+                asyncOperation.Post(
                 new SendOrPostCallback((obj) =>
                 {
                     ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
@@ -409,7 +409,7 @@ namespace Leestar54.WeChat.WebAPI
             }
             catch (Exception e)
             {
-                ((AsyncOperation)asyncOperation).Post(
+                asyncOperation.Post(
                 new SendOrPostCallback((obj) =>
                 {
                     ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
@@ -457,7 +457,7 @@ namespace Leestar54.WeChat.WebAPI
                             finishGetChatList = true;
                         }
                         BatchGetContactResponse batchGetContactMsg = httpClient.PostJson<BatchGetContactResponse>(webwxbatchgetcontactUrl, batchGetContactRequest);
-                        ((AsyncOperation)asyncOperation).Post(
+                        asyncOperation.Post(
                         new SendOrPostCallback((list) =>
                         {
                             BatchGetContactComplete?.Invoke(this, new TEventArgs<List<Contact>>((List<Contact>)list));
@@ -468,7 +468,7 @@ namespace Leestar54.WeChat.WebAPI
                 }
                 catch (Exception e)
                 {
-                    ((AsyncOperation)asyncOperation).Post(
+                    asyncOperation.Post(
                     new SendOrPostCallback((obj) =>
                     {
                         ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
@@ -490,7 +490,7 @@ namespace Leestar54.WeChat.WebAPI
                 {
                     string contactResult = httpClient.GetString(getContactUrl);
                     GetContactResponse getContactResponse = JsonConvert.DeserializeObject<GetContactResponse>(contactResult);
-                    ((AsyncOperation)asyncOperation).Post(
+                    asyncOperation.Post(
                     new SendOrPostCallback((list) =>
                     {
                         GetContactComplete?.Invoke(this, new TEventArgs<List<Contact>>((List<Contact>)list));
@@ -507,7 +507,7 @@ namespace Leestar54.WeChat.WebAPI
                 }
 
                 //获取完联系人中的公众号，才能获得名称，这个时候再相应图文消息事件。
-                ((AsyncOperation)asyncOperation).Post(
+                asyncOperation.Post(
                 new SendOrPostCallback((obj) =>
                 {
                     MPSubscribeMsgListComplete?.Invoke(this, new TEventArgs<List<MPSubscribeMsg>>((List<MPSubscribeMsg>)obj));
@@ -515,7 +515,7 @@ namespace Leestar54.WeChat.WebAPI
             }
             catch (Exception e)
             {
-                ((AsyncOperation)asyncOperation).Post(
+                asyncOperation.Post(
                 new SendOrPostCallback((obj) =>
                 {
                     ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
@@ -582,6 +582,10 @@ namespace Leestar54.WeChat.WebAPI
                                     {
                                         continue;
                                     }
+                                    else
+                                    {
+                                        throw e;
+                                    }
                                 }
                                 if (!syncPolling)
                                 {
@@ -602,7 +606,7 @@ namespace Leestar54.WeChat.WebAPI
                                     {
                                         if (syncResponse.AddMsgList.Count > 0)
                                         {
-                                            ((AsyncOperation)asyncOperation).Post(
+                                            asyncOperation.Post(
                                            new SendOrPostCallback((obj) =>
                                            {
                                                ReceiveMsg?.Invoke(this, new TEventArgs<List<AddMsg>>((List<AddMsg>)obj));
@@ -611,7 +615,7 @@ namespace Leestar54.WeChat.WebAPI
 
                                         if (syncResponse.ModContactCount > 0)
                                         {
-                                            ((AsyncOperation)asyncOperation).Post(
+                                            asyncOperation.Post(
                                            new SendOrPostCallback((obj) =>
                                            {
                                                ModContactListComplete?.Invoke(this, new TEventArgs<List<ModContactItem>>((List<ModContactItem>)obj));
@@ -619,7 +623,7 @@ namespace Leestar54.WeChat.WebAPI
                                         }
                                         if (syncResponse.DelContactCount > 0)
                                         {
-                                            ((AsyncOperation)asyncOperation).Post(
+                                            asyncOperation.Post(
                                            new SendOrPostCallback((obj) =>
                                            {
                                                DelContactListComplete?.Invoke(this, new TEventArgs<List<DelContactItem>>((List<DelContactItem>)obj));
@@ -636,7 +640,7 @@ namespace Leestar54.WeChat.WebAPI
                         case "1100":
                             //登出了微信，很可能是wx.qq.com和wx2.qq.com调用接口不一致导致的，注意登陆时候的跳转地址
                             Close();
-                            ((AsyncOperation)asyncOperation).Post(
+                            asyncOperation.Post(
                             new SendOrPostCallback((obj) =>
                             {
                                 LogoutComplete?.Invoke(this, new TEventArgs<User>((User)obj));
@@ -644,7 +648,7 @@ namespace Leestar54.WeChat.WebAPI
                             break;
                         case "1101":
                             Close();
-                            ((AsyncOperation)asyncOperation).Post(
+                            asyncOperation.Post(
                             new SendOrPostCallback((obj) =>
                             {
                                 LogoutComplete?.Invoke(this, new TEventArgs<User>((User)obj));
@@ -653,7 +657,7 @@ namespace Leestar54.WeChat.WebAPI
                             break;
                         case "1102":
                             Close();
-                            ((AsyncOperation)asyncOperation).Post(
+                            asyncOperation.Post(
                             new SendOrPostCallback((obj) =>
                             {
                                 LogoutComplete?.Invoke(this, new TEventArgs<User>((User)obj));
@@ -670,7 +674,7 @@ namespace Leestar54.WeChat.WebAPI
             }
             catch (Exception e)
             {
-                ((AsyncOperation)asyncOperation).Post(
+                asyncOperation.Post(
                 new SendOrPostCallback((obj) =>
                 {
                     ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
@@ -802,7 +806,7 @@ namespace Leestar54.WeChat.WebAPI
                 }
                 catch (Exception e)
                 {
-                    ((AsyncOperation)asyncOperation).Post(
+                    asyncOperation.Post(
                     new SendOrPostCallback((obj) =>
                     {
                         ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
@@ -826,7 +830,7 @@ namespace Leestar54.WeChat.WebAPI
                 }
                 catch (Exception e)
                 {
-                    ((AsyncOperation)asyncOperation).Post(
+                    asyncOperation.Post(
                     new SendOrPostCallback((obj) =>
                     {
                         ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
@@ -848,7 +852,7 @@ namespace Leestar54.WeChat.WebAPI
                 try
                 {
                     Image img = httpClient.GetImage(fullUrl);
-                    ((AsyncOperation)asyncOperation).Post(
+                    asyncOperation.Post(
                     new SendOrPostCallback((obj) =>
                     {
                         action((Image)obj);
@@ -856,7 +860,7 @@ namespace Leestar54.WeChat.WebAPI
                 }
                 catch (Exception e)
                 {
-                    ((AsyncOperation)asyncOperation).Post(
+                    asyncOperation.Post(
                     new SendOrPostCallback((obj) =>
                     {
                         ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));

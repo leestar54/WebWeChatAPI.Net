@@ -40,7 +40,7 @@ namespace Leestar54.WeChat.WebAPI
         public HttpClient()
         {
             ServicePointManager.DefaultConnectionLimit = 512;
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | (SecurityProtocolType)768 | (SecurityProtocolType)3072 | SecurityProtocolType.Ssl3;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         }
 
         private CookieContainer cookieContainer = new CookieContainer();

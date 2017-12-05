@@ -1,18 +1,24 @@
 # WebWeChat.Net
-基于.Net平台C#的微信网页版API
+基于.Net平台C#的微信网页版API注
+
+注：交互过程可以使用fiddler工具分析
 
 ## 近期更新
 
+* 优化稳定性，开发环境升级.Net至4.6
+  win7系统偶尔会出现The request was aborted: Could not create SSL/TLS secure channel
+  经研究是.Net自身对于tls协议支持上的bug，建议将系统补丁打至最新，并且framework升级至最新4.7.1
+  framework下载地址：https://www.microsoft.com/net/download/thank-you/net471
 * 实现API基础功能
 
 
-## 开发运行环境
+## 开发环境
 
-vs2015+.net4.0 framework
+vs2015+.net4.6.1 framework
 
 ## 依赖项
 
-json.net 4.0
+json.net
 
 ## Feature
 

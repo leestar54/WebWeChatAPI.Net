@@ -184,6 +184,15 @@ namespace Test
                 {
                     contactDict.Add(item.UserName, item);
                 }
+
+                //联系人列表中包含联系人，公众号，可以通过参数做区分
+                if(item.VerifyFlag!=0)
+                {
+                    //个人号
+                }else
+                {
+                    //公众号
+                }
             }
         }
 
