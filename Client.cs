@@ -161,7 +161,8 @@ namespace Leestar54.WeChat.WebAPI
         {
             string logoutUrl = string.Format(host + "/cgi-bin/mmwebwx-bin/webwxlogout?redirect=1&type=0&skey={0}", baseRequest.Skey);
             string body = string.Format("sid={0}&uin={1}", baseRequest.Sid, baseRequest.Uin);
-            string result = httpClient.PostFormString(logoutUrl, body);
+            string result = string.Empty;
+            result = httpClient.PostFormString(logoutUrl, body);
             OtherUtils.Debug(result, "logout");
             Close();
             return result;
@@ -544,26 +545,8 @@ namespace Leestar54.WeChat.WebAPI
             {
                 while (syncPolling)
                 {
-                    int errCount = 0;
                     string syncCheckUrl = string.Format(pushHost + "/cgi-bin/mmwebwx-bin/synccheck?r={0}&skey={1}&sid={2}&uin={3}&deviceid={4}&synckey={5}&_={6}", OtherUtils.GetJavaTimeStamp(), baseRequest.Skey, baseRequest.Sid, baseRequest.Uin, baseRequest.DeviceID, syncKey.ToString(), syncKey.Step);
-                    string syncCheckResult = string.Empty;
-                    try
-                    {
-                        syncCheckResult = httpClient.GetString(syncCheckUrl);
-                        errCount = 0;
-                    }
-                    catch (Exception e)
-                    {
-                        //为了保证稳定性，轮询过程中的http异常略过
-                        if (errCount > 3)
-                        {
-                            OtherUtils.Debug("消息轮询异常，15秒钟之后再试");
-                            Thread.Sleep(15000);
-                        }
-                        OtherUtils.Debug(e);
-                        errCount++;
-                        continue;
-                    }
+                    string syncCheckResult = httpClient.GetString(syncCheckUrl);
                     if (!syncPolling)
                     {
                         return;
@@ -583,23 +566,7 @@ namespace Leestar54.WeChat.WebAPI
                                 syncRequest.SyncKey = syncKey;
                                 syncRequest.rr = OtherUtils.Get_r();
                                 string syncUrl = string.Format(host + "/cgi-bin/mmwebwx-bin/webwxsync?sid={0}&skey={1}", baseRequest.Sid, baseRequest.Skey);
-                                SyncResponse syncResponse = null;
-                                try
-                                {
-                                    syncResponse = httpClient.PostJson<SyncResponse>(syncUrl, syncRequest);
-                                }
-                                catch (WebException e)
-                                {
-                                    //为了保证稳定性，轮询过程中的http异常略过
-                                    if (errCount > 3)
-                                    {
-                                        OtherUtils.Debug("消息轮询异常，15秒钟之后再试");
-                                        Thread.Sleep(15000);
-                                    }
-                                    OtherUtils.Debug(e);
-                                    errCount++;
-                                    continue;
-                                }
+                                SyncResponse syncResponse = httpClient.PostJson<SyncResponse>(syncUrl, syncRequest);
                                 if (!syncPolling)
                                 {
                                     return;

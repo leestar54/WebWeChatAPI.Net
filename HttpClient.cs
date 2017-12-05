@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 
 namespace Leestar54.WeChat.WebAPI
 {
@@ -58,7 +59,7 @@ namespace Leestar54.WeChat.WebAPI
         public string GetString(string url)
         {
             string result = string.Empty;
-            Stream stream = GetResponseStream("GET", url);
+            Stream stream = Retry<Stream>(() => { return GetResponseStream("GET", url); });
             using (stream)
             {
                 StreamReader sr = new StreamReader(stream);
@@ -71,32 +72,35 @@ namespace Leestar54.WeChat.WebAPI
         {
             string result = string.Empty;
             var boundary = "----WebKitFormBoundary" + Guid.NewGuid().ToString("N").Substring(0, 16);
-            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-            request.Method = "POST";
-            request.Accept = "*/*";
-            request = PretendWechat(request);
-            request.ContentType = "multipart/form-data; boundary=" + boundary;
-            var sw = new StreamWriter(request.GetRequestStream());
-            foreach (var item in dataList)
+            Stream stream = Retry<Stream>(() =>
             {
-                if (item.isFile)
+                HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+                request.Method = "POST";
+                request.Accept = "*/*";
+                request = PretendWechat(request);
+                request.ContentType = "multipart/form-data; boundary=" + boundary;
+                var sw = new StreamWriter(request.GetRequestStream());
+                foreach (var item in dataList)
                 {
-                    sw.Write(string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; {2}=\"{3}\"\r\nContent-Type: {4}\r\n\r\n", boundary, item.Name, item.Name, item.FileName, MimeMapping.GetMimeMapping(item.FileName)));
+                    if (item.isFile)
+                    {
+                        sw.Write(string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; {2}=\"{3}\"\r\nContent-Type: {4}\r\n\r\n", boundary, item.Name, item.Name, item.FileName, MimeMapping.GetMimeMapping(item.FileName)));
+                        sw.Flush();
+                        sw.BaseStream.Write(item.Content, 0, item.ContentLength);
+                        sw.Write("\r\n");
+                    }
+                    else
+                    {
+                        sw.Write(string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"\r\n\r\n{2}\r\n", boundary, item.Name, item.Value));
+                    }
                     sw.Flush();
-                    sw.BaseStream.Write(item.Content, 0, item.ContentLength);
-                    sw.Write("\r\n");
                 }
-                else
-                {
-                    sw.Write(string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"\r\n\r\n{2}\r\n", boundary, item.Name, item.Value));
-                }
+                sw.Write("--" + boundary + "--\r\n");
                 sw.Flush();
-            }
-            sw.Write("--" + boundary + "--\r\n");
-            sw.Flush();
-            sw.Close();
-            HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-            Stream stream = response.GetResponseStream();
+                sw.Close();
+                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+                return response.GetResponseStream();
+            });
             using (stream)
             {
                 StreamReader sr = new StreamReader(stream);
@@ -108,7 +112,10 @@ namespace Leestar54.WeChat.WebAPI
         public string PostFormString(string url, string body)
         {
             string result = string.Empty;
-            Stream stream = GetResponseStream("POST", url, "application/x-www-form-urlencoded", body);
+            Stream stream = Retry<Stream>(() =>
+            {
+                return GetResponseStream("POST", url, "application/x-www-form-urlencoded", body);
+            });
             using (stream)
             {
                 StreamReader sr = new StreamReader(stream);
@@ -120,7 +127,10 @@ namespace Leestar54.WeChat.WebAPI
         public T PostJson<T>(string url, object body)
         {
             string result = string.Empty;
-            Stream stream = GetResponseStream("POST", url, "application/json;charset=UTF-8", JsonConvert.SerializeObject(body, Newtonsoft.Json.Formatting.None));
+            Stream stream = Retry<Stream>(() =>
+            {
+                return GetResponseStream("POST", url, "application/json;charset=UTF-8", JsonConvert.SerializeObject(body, Newtonsoft.Json.Formatting.None));
+            });
             using (stream)
             {
                 StreamReader sr = new StreamReader(stream);
@@ -154,7 +164,7 @@ namespace Leestar54.WeChat.WebAPI
         public Image GetImage(string url)
         {
             Image result;
-            Stream stream = GetResponseStream("GET", url);
+            Stream stream = Retry<Stream>(() => { return GetResponseStream("GET", url); });
             using (stream)
             {
                 result = Image.FromStream(stream);
@@ -182,6 +192,38 @@ namespace Leestar54.WeChat.WebAPI
                 request.Headers.Add("Origin", Referer);
             }
             return request;
+        }
+
+
+        /// <summary>
+        /// 三次重试机制
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="func"></param>
+        /// <returns></returns>
+        private T Retry<T>(Func<T> func)
+        {
+            int err = 0;
+            while (err < 3)
+            {
+                try
+                {
+                    return func();
+                }
+                catch (WebException webExp)
+                {
+                    err++;
+                    if (webExp.Status == WebExceptionStatus.Timeout || webExp.Status == WebExceptionStatus.SecureChannelFailure)
+                    {
+                        Thread.Sleep(1000);
+                    }
+                    if (err > 2)
+                    {
+                        throw webExp;
+                    }
+                }
+            }
+            return func();
         }
     }
 
