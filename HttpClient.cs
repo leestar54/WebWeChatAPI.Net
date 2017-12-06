@@ -213,9 +213,9 @@ namespace Leestar54.WeChat.WebAPI
                 catch (WebException webExp)
                 {
                     err++;
-                    if (webExp.Status == WebExceptionStatus.Timeout || webExp.Status == WebExceptionStatus.SecureChannelFailure)
+                    if (webExp.Status == WebExceptionStatus.Timeout || webExp.Status == WebExceptionStatus.SecureChannelFailure || webExp.Status == WebExceptionStatus.ServerProtocolViolation)
                     {
-                        Thread.Sleep(1000);
+                        Thread.Sleep(2000);
                     }
                     if (err > 2)
                     {
