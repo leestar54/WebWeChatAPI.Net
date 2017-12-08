@@ -18,6 +18,7 @@ namespace Leestar54.WeChat.WebAPI.Modal
         /// 成员信息，群用
         /// </summary>
         public List<Member> MemberList { get; set; }
+
         /// <summary>
         /// OwnerUin
         /// </summary>

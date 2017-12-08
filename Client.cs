@@ -435,7 +435,7 @@ namespace Leestar54.WeChat.WebAPI
         /// 获取联系人信息，例如初始化、群聊里面。
         /// </summary>
         /// <param name="statusNotifyUserName">需要获取的UserName列表，包括群，个人用户，用英文,分割</param>
-        /// <param name="EncryChatRoomId">默认为空，如果是获取聊天室内成员信息，则填写encryChatRoomId</param>
+        /// <param name="EncryChatRoomId">默认为空，如果是获取群内成员详细信息，则填写encryChatRoomId，也就是群的UserName</param>
         public void GetBatchGetContactAsync(string statusNotifyUserName, string encryChatRoomId = "")
         {
             Task.Factory.StartNew(() =>

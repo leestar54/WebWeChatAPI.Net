@@ -46,6 +46,11 @@ namespace Test
             client.Close();
             Console.ReadLine();
             client.Logout();
+
+            //获取群成员详情，需要我们主动调用，一般用不到，因为群里已经包含Member基本信息。
+            //Contact chatRoom = contactDict["群UserName"];
+            //string listStr = string.Join(",", chatRoom.MemberList);
+            //client.GetBatchGetContactAsync(listStr, chatRoom.UserName);
         }
 
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -77,7 +82,7 @@ namespace Test
                         }
                         else
                         {
-                            //不包含则需要我们主动拉取信息
+                            //不包含（一般为群）则需要我们主动拉取信息
                             client.GetBatchGetContactAsync(item.FromUserName);
                         }
 
@@ -186,10 +191,11 @@ namespace Test
                 }
 
                 //联系人列表中包含联系人，公众号，可以通过参数做区分
-                if(item.VerifyFlag!=0)
+                if (item.VerifyFlag != 0)
                 {
                     //个人号
-                }else
+                }
+                else
                 {
                     //公众号
                 }
@@ -201,8 +207,12 @@ namespace Test
             Console.WriteLine("拉取联系人信息，总数：" + e.Result.Count);
             foreach (var item in e.Result)
             {
-                //群信息拉取
-                if (item.IsChatRoom() && !contactDict.Keys.Contains(item.UserName))
+                //群成员详细信息也会回调到此处,可以这么判断
+                if (item.EncryChatRoomId != "0" && !item.UserName.StartsWith("@@"))
+                {
+                    Console.WriteLine("接受到群成员详情");
+                }
+                else if (!contactDict.Keys.Contains(item.UserName))
                 {
                     contactDict.Add(item.UserName, item);
                 }
