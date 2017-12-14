@@ -372,6 +372,10 @@ namespace Leestar54.WeChat.WebAPI
                     BaseRequest = baseRequest
                 });
                 InitResponse initMsg = httpClient.PostJson<InitResponse>(webwxinitUrl, postjson);
+                if (initMsg.BaseResponse.Ret != 0)
+                {
+                    throw new Exception("程序初始化失败");
+                }
                 //初始化2次，官网也是初始化2次，这样貌似比较稳定
                 httpClient.PostJson<InitResponse>(webwxinitUrl, postjson);
                 user = initMsg.User;
