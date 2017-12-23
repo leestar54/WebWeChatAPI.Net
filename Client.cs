@@ -523,7 +523,7 @@ namespace Leestar54.WeChat.WebAPI
                     }
                 }
 
-                //获取完联系人中的公众号，才能获得名称，这个时候再相应图文消息事件。
+                //获取完联系人中的公众号，才能获得名称，这个时候再发送图文消息事件。
                 asyncOperation.Post(
                 new SendOrPostCallback((obj) =>
                 {
@@ -532,6 +532,15 @@ namespace Leestar54.WeChat.WebAPI
             }
             catch (Exception e)
             {
+                if(e is WebException)
+                {
+                    //过千人账号有时候获取不到联系人列表，服务器返回503，官方测试结果也是反馈503导致获取不到，为了不影响正常使用，跳过获取联系人步骤
+                    WebException we = e as WebException;
+                    if (we.Status == WebExceptionStatus.ProtocolError && ((HttpWebResponse)we.Response).StatusCode == HttpStatusCode.ServiceUnavailable)
+                    {
+                        return;
+                    }
+                }
                 asyncOperation.Post(
                 new SendOrPostCallback((obj) =>
                 {
