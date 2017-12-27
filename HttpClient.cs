@@ -68,6 +68,18 @@ namespace Leestar54.WeChat.WebAPI
             return result;
         }
 
+        public string GetStringOnce(string url)
+        {
+            string result = string.Empty;
+            Stream stream = GetResponseStream("GET", url);
+            using (stream)
+            {
+                StreamReader sr = new StreamReader(stream);
+                result = sr.ReadToEnd();
+            }
+            return result;
+        }
+
         public string PostMutipart(string url, List<FormDataItem> dataList)
         {
             string result = string.Empty;

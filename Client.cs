@@ -19,6 +19,11 @@ using System.Xml;
 
 namespace Leestar54.WeChat.WebAPI
 {
+    public class GetContactException : Exception
+    {
+        public GetContactException(string msg) : base(msg) { }
+    }
+
     public class Client
     {
         private AsyncOperation asyncOperation;
@@ -505,7 +510,7 @@ namespace Leestar54.WeChat.WebAPI
                 string getContactUrl = string.Format(host + "/cgi-bin/mmwebwx-bin/webwxgetcontact?r={0}&seq={1}&skey={2}", OtherUtils.GetJavaTimeStamp(), 0, baseRequest.Skey);
                 while (!finishGetContactList)
                 {
-                    string contactResult = httpClient.GetString(getContactUrl);
+                    string contactResult = httpClient.GetStringOnce(getContactUrl);
                     GetContactResponse getContactResponse = JsonConvert.DeserializeObject<GetContactResponse>(contactResult);
                     asyncOperation.Post(
                     new SendOrPostCallback((list) =>
@@ -532,20 +537,28 @@ namespace Leestar54.WeChat.WebAPI
             }
             catch (Exception e)
             {
-                if(e is WebException)
+                if (e is WebException)
                 {
-                    //过千人账号有时候获取不到联系人列表，服务器返回503，官方测试结果也是反馈503导致获取不到，为了不影响正常使用，跳过获取联系人步骤
+
                     WebException we = e as WebException;
                     if (we.Status == WebExceptionStatus.ProtocolError && ((HttpWebResponse)we.Response).StatusCode == HttpStatusCode.ServiceUnavailable)
                     {
-                        return;
+                        //过千人账号有时候获取不到联系人列表，服务器返回503，官方测试结果也是反馈503导致获取不到，为了不影响正常使用，跳过获取联系人步骤
+                        asyncOperation.Post(
+                        new SendOrPostCallback((obj) =>
+                        {
+                            ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
+                        }), new GetContactException("无法获取好友列表"));
                     }
                 }
-                asyncOperation.Post(
-                new SendOrPostCallback((obj) =>
+                else
                 {
-                    ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
-                }), e);
+                    asyncOperation.Post(
+                    new SendOrPostCallback((obj) =>
+                    {
+                        ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
+                    }), e);
+                }
             }
         }
 
