@@ -200,6 +200,11 @@ namespace Test
                     //公众号
                 }
             }
+            //如果获取完成
+            if (client.IsFinishGetContactList)
+            {
+
+            }
         }
 
         private static void Client_BatchGetContactComplete(object sender, TEventArgs<List<Contact>> e)

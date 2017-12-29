@@ -30,6 +30,7 @@ namespace Leestar54.WeChat.WebAPI
         private TaskFactory factory;
         private CancellationTokenSource source;
         private HttpClient httpClient = new HttpClient();
+        private bool finishGetContactList = false;
 
         private bool syncPolling = true;
 
@@ -66,6 +67,22 @@ namespace Leestar54.WeChat.WebAPI
             get
             {
                 return user;
+            }
+        }
+
+        /// <summary>
+        /// 是否读取完联系人
+        /// </summary>
+        public bool IsFinishGetContactList
+        {
+            get
+            {
+                return finishGetContactList;
+            }
+
+            set
+            {
+                finishGetContactList = value;
             }
         }
         #endregion
@@ -506,7 +523,7 @@ namespace Leestar54.WeChat.WebAPI
             try
             {
                 //获取联系人列表
-                bool finishGetContactList = false;
+                finishGetContactList = false;
                 string getContactUrl = string.Format(host + "/cgi-bin/mmwebwx-bin/webwxgetcontact?r={0}&seq={1}&skey={2}", OtherUtils.GetJavaTimeStamp(), 0, baseRequest.Skey);
                 while (!finishGetContactList)
                 {
