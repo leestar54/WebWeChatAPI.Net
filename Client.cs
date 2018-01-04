@@ -19,9 +19,20 @@ using System.Xml;
 
 namespace Leestar54.WeChat.WebAPI
 {
+    /// <summary>
+    /// 过千人账号有时候获取不到联系人列表，服务器返回503，官方测试结果也是反馈503导致获取不到
+    /// </summary>
     public class GetContactException : Exception
     {
         public GetContactException(string msg) : base(msg) { }
+    }
+
+    /// <summary>
+    /// 异步操作失败异常
+    /// </summary>
+    public class OperateFailException : Exception
+    {
+        public OperateFailException(string msg) : base(msg) { }
     }
 
     public class Client
@@ -215,7 +226,7 @@ namespace Leestar54.WeChat.WebAPI
                         {
                             ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
                         }), e);
-                        throw e;
+                        Close();
                     }
                 }
             });
@@ -256,7 +267,7 @@ namespace Leestar54.WeChat.WebAPI
                 {
                     ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
                 }), e);
-                throw e;
+                Close();
             }
         }
 
@@ -377,7 +388,7 @@ namespace Leestar54.WeChat.WebAPI
                 {
                     ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
                 }), e);
-                throw e;
+                Close();
             }
         }
 
@@ -424,7 +435,7 @@ namespace Leestar54.WeChat.WebAPI
                 {
                     ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
                 }), e);
-                throw e;
+                Close();
             }
         }
 
@@ -453,7 +464,7 @@ namespace Leestar54.WeChat.WebAPI
                 {
                     ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
                 }), e);
-                throw e;
+                Close();
             }
         }
 
@@ -825,7 +836,15 @@ namespace Leestar54.WeChat.WebAPI
             {
                 try
                 {
-                    SendMsg(fileInfo, toUserName);
+                    SendMsgResponse response = SendMsg(fileInfo, toUserName);
+                    if (response.BaseResponse.Ret != 0)
+                    {
+                        asyncOperation.Post(
+                        new SendOrPostCallback((obj) =>
+                        {
+                            ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
+                        }), new OperateFailException(response.BaseResponse.ErrMsg));
+                    }
                 }
                 catch (Exception e)
                 {
@@ -849,7 +868,15 @@ namespace Leestar54.WeChat.WebAPI
             {
                 try
                 {
-                    SendMsg(msg, toUserName);
+                    SendMsgResponse response = SendMsg(msg, toUserName);
+                    if (response.BaseResponse.Ret != 0)
+                    {
+                        asyncOperation.Post(
+                        new SendOrPostCallback((obj) =>
+                        {
+                            ExceptionCatched?.Invoke(this, new TEventArgs<Exception>((Exception)obj));
+                        }), new OperateFailException(response.BaseResponse.ErrMsg));
+                    }
                 }
                 catch (Exception e)
                 {

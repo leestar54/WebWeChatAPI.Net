@@ -243,6 +243,18 @@ namespace Test
 
         private static void Client_ExceptionCatched(object sender, TEventArgs<Exception> e)
         {
+            if (e.Result is GetContactException)
+            {
+                Console.WriteLine("获取好友列表异常：" + e.Result.ToString());
+                return;
+            }
+
+            if (e.Result is OperateFailException)
+            {
+                Console.WriteLine("异步操作异常：" + e.Result.ToString());
+                return;
+            }
+
             Console.WriteLine("异常：" + e.Result.ToString());
         }
     }
