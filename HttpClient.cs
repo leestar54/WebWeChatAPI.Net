@@ -187,7 +187,7 @@ namespace Leestar54.WeChat.WebAPI
         public HttpWebRequest PretendWechat(HttpWebRequest request)
         {
 #if !DEBUG
-            request.Proxy = null;
+            //request.Proxy = null;
 #endif
             request.KeepAlive = true;
             request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36";

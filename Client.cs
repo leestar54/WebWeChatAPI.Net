@@ -606,7 +606,13 @@ namespace Leestar54.WeChat.WebAPI
                         return;
                     }
                     MatchCollection matchCollection = Regex.Matches(syncCheckResult, @"\d+");
+                    //0 正常
                     string retcode = matchCollection[0].Value;
+                    //0 正常
+                    //2 新的消息
+                    //4 通过时发现，删除好友
+                    //6 删除时发现和对方通过好友验证
+                    //7 进入 / 离开聊天界面 （可能没有了）
                     string selector = matchCollection[1].Value;
                     OtherUtils.Debug("retcode:" + retcode + " selector:" + selector);
                     switch (retcode)
@@ -627,7 +633,10 @@ namespace Leestar54.WeChat.WebAPI
                                 }
                                 else
                                 {
-                                    syncKey = syncResponse.SyncKey;
+                                    if (syncResponse.SyncKey.Count > 0)
+                                    {
+                                        syncKey = syncResponse.SyncKey;
+                                    }
                                     //只要不是0，就是有消息，有消息我们处理就行了，不管selector是几
                                     if (syncResponse.AddMsgCount == 0 && syncResponse.DelContactCount == 0 && syncResponse.ModContactCount == 0 && syncResponse.ModChatRoomMemberCount == 0)
                                     {
