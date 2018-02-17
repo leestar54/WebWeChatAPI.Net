@@ -19,6 +19,23 @@ namespace Leestar54.WeChat.WebAPI.Modal
         /// </summary>
         public List<Member> MemberList { get; set; }
 
+        private Dictionary<string, Member> memberDict = null;
+
+        /// <summary>
+        /// 成员字典，方便查询
+        /// </summary>
+        public Dictionary<string, Member> MemberDict
+        {
+            get
+            {
+                if (memberDict == null)
+                {
+                    memberDict = MemberList.ToDictionary(key => key.UserName, value => value);
+                }
+                return memberDict;
+            }
+        }
+
         /// <summary>
         /// OwnerUin
         /// </summary>

@@ -145,7 +145,7 @@ namespace Leestar54.WeChat.WebAPI
         /// <summary>
         /// 修改联系人完成
         /// </summary>
-        public event EventHandler<TEventArgs<List<ModContactItem>>> ModContactListComplete;
+        public event EventHandler<TEventArgs<List<Contact>>> ModContactListComplete;
         //public event EventHandler<TEventArgs<List<>>> ModChatRoomMemberListComplete;
         #endregion
 
@@ -661,7 +661,7 @@ namespace Leestar54.WeChat.WebAPI
                                             asyncOperation.Post(
                                            new SendOrPostCallback((obj) =>
                                            {
-                                               ModContactListComplete?.Invoke(this, new TEventArgs<List<ModContactItem>>((List<ModContactItem>)obj));
+                                               ModContactListComplete?.Invoke(this, new TEventArgs<List<Contact>>((List<Contact>)obj));
                                            }), syncResponse.ModContactList);
                                         }
                                         if (syncResponse.DelContactCount > 0)

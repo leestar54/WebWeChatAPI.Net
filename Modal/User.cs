@@ -21,7 +21,7 @@ namespace Leestar54.WeChat.WebAPI.Modal
     }
 
     /// <summary>
-    /// init之后获取的用户信息
+    /// 用户信息
     /// </summary>
     public class User
     {
@@ -45,7 +45,7 @@ namespace Leestar54.WeChat.WebAPI.Modal
         /// </summary>
         public string UserName { get; set; }
         /// <summary>
-        /// 昵称
+        /// 昵称，群若未命名，则为空
         /// </summary>
         public string NickName { get; set; }
         /// <summary>

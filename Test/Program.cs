@@ -58,9 +58,13 @@ namespace Test
             Console.WriteLine(e.ToString());
         }
 
-        private static void Client_ModContactListComplete(object sender, TEventArgs<List<ModContactItem>> e)
+        private static void Client_ModContactListComplete(object sender, TEventArgs<List<Contact>> e)
         {
             Console.WriteLine("接收修改联系人信息");
+            foreach (var item in e.Result)
+            {
+                contactDict[item.UserName] = item;
+            }
         }
 
         private static void Client_DelContactListComplete(object sender, TEventArgs<List<DelContactItem>> e)
@@ -70,7 +74,6 @@ namespace Test
 
         private static void Client_ReceiveMsg(object sender, TEventArgs<List<AddMsg>> e)
         {
-            Console.WriteLine("接收新消息");
             foreach (var item in e.Result)
             {
                 switch (item.MsgType)
@@ -78,7 +81,16 @@ namespace Test
                     case MsgType.MM_DATA_TEXT:
                         if (contactDict.Keys.Contains(item.FromUserName))
                         {
-                            Console.WriteLine(contactDict[item.FromUserName].NickName + ":" + item.Content);
+                            if (item.FromUserName.StartsWith("@@"))
+                            {
+                                //群消息，内容格式为[群内username];<br/>[content]，例如Content=@ffda8da3471b87ff22a6a542c5581a6efd1b883698db082e529e8e877bef79b6:<br/>哈哈
+                                string[] content = item.Content.Split(new string[] { ":<br/>" }, StringSplitOptions.RemoveEmptyEntries);
+                                Console.WriteLine(contactDict[item.FromUserName].NickName + "：" + contactDict[item.FromUserName].MemberDict[content[0]].NickName + "：" + content[1]);
+                            }
+                            else
+                            {
+                                Console.WriteLine(contactDict[item.FromUserName].NickName + "：" + item.Content);
+                            }
                         }
                         else
                         {
@@ -109,7 +121,7 @@ namespace Test
                     case MsgType.MM_DATA_QMSG:
                         break;
                     case MsgType.MM_DATA_VERIFYMSG:
-                        //自动加好友
+                        //自动加好友，日限额80个左右，请勿超限额多次调用，有封号风险
                         client.VerifyUser(item.RecommendInfo);
                         break;
                     case MsgType.MM_DATA_PUSHSYSTEMMSG:
@@ -160,6 +172,12 @@ namespace Test
                     case MsgType.MM_DATA_SYSNOTICE:
                         break;
                     case MsgType.MM_DATA_SYS:
+                        //系统消息提示，例如完成好友验证通过，建群等等，提示消息“以已经通过了***的朋友验证请求，现在可以开始聊天了”、“加入了群聊”
+                        //不在字典，说明是新增，我们就主动拉取加入联系人字典
+                        if (!contactDict.Keys.Contains(item.FromUserName))
+                        {
+                            client.GetBatchGetContactAsync(item.FromUserName);
+                        }
                         break;
                     case MsgType.MM_DATA_RECALLED:
                         break;
@@ -182,7 +200,7 @@ namespace Test
 
         private static void Client_GetContactComplete(object sender, TEventArgs<List<Contact>> e)
         {
-            Console.WriteLine("获取联系人列表，总数：" + e.Result.Count);
+            Console.WriteLine("获取联系人列表（包括公众号，联系人），总数：" + e.Result.Count);
             foreach (var item in e.Result)
             {
                 if (!contactDict.Keys.Contains(item.UserName))
@@ -212,12 +230,7 @@ namespace Test
             Console.WriteLine("拉取联系人信息，总数：" + e.Result.Count);
             foreach (var item in e.Result)
             {
-                //群成员详细信息也会回调到此处,可以这么判断
-                if (item.EncryChatRoomId != "0" && !item.UserName.StartsWith("@@"))
-                {
-                    Console.WriteLine("接受到群成员详情");
-                }
-                else if (!contactDict.Keys.Contains(item.UserName))
+                if (!contactDict.Keys.Contains(item.UserName))
                 {
                     contactDict.Add(item.UserName, item);
                 }
