@@ -82,7 +82,7 @@ namespace Leestar54.WeChat.WebAPI
         }
 
         /// <summary>
-        /// 是否读取完联系人
+        /// 是否读取完初始化联系人列表
         /// </summary>
         public bool IsFinishGetContactList
         {
@@ -469,7 +469,7 @@ namespace Leestar54.WeChat.WebAPI
         }
 
         /// <summary>
-        /// 获取联系人信息，例如初始化、群聊里面。
+        /// 拉取联系人信息。
         /// </summary>
         /// <param name="statusNotifyUserName">需要获取的UserName列表，包括群，个人用户，用英文,分割</param>
         /// <param name="EncryChatRoomId">默认为空，如果是获取群内成员详细信息，则填写encryChatRoomId，也就是群的UserName</param>

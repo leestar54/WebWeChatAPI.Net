@@ -54,7 +54,7 @@ namespace Leestar54.WeChat.WebAPI.Modal.Response
         /// <summary>
         /// BindUin
         /// </summary>
-        public int BindUin { get; set; }
+        public long BindUin { get; set; }
         /// <summary>
         /// BindEmail
         /// </summary>
