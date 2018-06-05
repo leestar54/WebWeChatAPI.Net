@@ -66,7 +66,7 @@ namespace Leestar54.WeChat.WebAPI.Modal.Response
         /// <summary>
         /// Status
         /// </summary>
-        public int Status { get; set; }
+        public long Status { get; set; }
         /// <summary>
         /// Sex
         /// </summary>

@@ -28,7 +28,7 @@ namespace Leestar54.WeChat.WebAPI.Modal
         /// <summary>
         /// 个人号唯一识别码，不会变
         /// </summary>
-        public Int64 Uin { get; set; }
+        public string Uin { get; set; }
         /// <summary>
         /// 每次登陆都会变
         /// 个人号
