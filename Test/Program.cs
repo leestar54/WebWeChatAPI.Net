@@ -19,6 +19,7 @@ namespace Test
         private static Client client;
         private static Dictionary<string, Contact> contactDict = new Dictionary<string, Contact>();
         private static QrCodeForm qrForm;
+        [STAThread]
         static void Main(string[] args)
         {
             Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
@@ -42,10 +43,30 @@ namespace Test
             client.Start();
             qrForm.ShowDialog();
 
-            Console.ReadLine();
-            client.Close();
-            Console.ReadLine();
-            client.Logout();
+
+            while (true)
+            {
+                var keyinfo = Console.ReadKey();
+                switch (keyinfo.Key)
+                {
+                    case ConsoleKey.NumPad1:
+                        client.SendMsgAsync("双击666！", "filehelper");
+                        break;
+                    case ConsoleKey.NumPad2:
+                        OpenFileDialog openImgFileDialog = new OpenFileDialog();
+                        openImgFileDialog.Filter = "图片|*.jpg;*.png;*.gif";
+                        if (openImgFileDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            var file = new FileInfo(openImgFileDialog.FileName);
+                            client.SendMsgAsync(file, "filehelper");
+                        }
+                        break;
+                    case ConsoleKey.Escape:
+                        client.Close();
+                        client.Logout();
+                        break;
+                }
+            }
 
             //获取群成员详情，需要我们主动调用，一般用不到，因为群里已经包含Member基本信息。
             //Contact chatRoom = contactDict["群UserName"];
@@ -240,6 +261,10 @@ namespace Test
         private static void Client_LoginComplete(object sender, TEventArgs<User> e)
         {
             Console.WriteLine("登陆成功：" + e.Result.NickName);
+            qrForm.Invoke(new Action(() =>
+            {
+                qrForm.Close();
+            }));
         }
 
         private static void Client_CheckScanComplete(object sender, TEventArgs<System.Drawing.Image> e)
