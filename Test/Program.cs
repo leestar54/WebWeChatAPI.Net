@@ -27,6 +27,7 @@ namespace Test
 
             client = new Client();
             qrForm = new QrCodeForm();
+            string cookie = @"ptui_loginuin=12345678;last_wxuin=****;wxuin=****;webwxuvid=****; webwx_auth_ticket=****";
 
             client.ExceptionCatched += Client_ExceptionCatched; ;
             client.GetLoginQrCodeComplete += Client_GetLoginQrCodeComplete; ;
@@ -40,8 +41,8 @@ namespace Test
             client.DelContactListComplete += Client_DelContactListComplete; ;
             client.ModContactListComplete += Client_ModContactListComplete;
             Console.WriteLine("小助手启动");
-            client.Start();
-            qrForm.ShowDialog();
+            client.Start(cookie);
+            //qrForm.ShowDialog();
 
 
             while (true)
@@ -95,116 +96,123 @@ namespace Test
 
         private static void Client_ReceiveMsg(object sender, TEventArgs<List<AddMsg>> e)
         {
-            foreach (var item in e.Result)
+            try
             {
-                switch (item.MsgType)
+                foreach (var item in e.Result)
                 {
-                    case MsgType.MM_DATA_TEXT:
-                        if (contactDict.Keys.Contains(item.FromUserName))
-                        {
-                            if (item.FromUserName.StartsWith("@@"))
+                    switch (item.MsgType)
+                    {
+                        case MsgType.MM_DATA_TEXT:
+                            if (contactDict.Keys.Contains(item.FromUserName))
                             {
-                                //群消息，内容格式为[群内username];<br/>[content]，例如Content=@ffda8da3471b87ff22a6a542c5581a6efd1b883698db082e529e8e877bef79b6:<br/>哈哈
-                                string[] content = item.Content.Split(new string[] { ":<br/>" }, StringSplitOptions.RemoveEmptyEntries);
-                                Console.WriteLine(contactDict[item.FromUserName].NickName + "：" + contactDict[item.FromUserName].MemberDict[content[0]].NickName + "：" + content[1]);
+                                if (item.FromUserName.StartsWith("@@"))
+                                {
+                                    //群消息，内容格式为[群内username];<br/>[content]，例如Content=@ffda8da3471b87ff22a6a542c5581a6efd1b883698db082e529e8e877bef79b6:<br/>哈哈
+                                    string[] content = item.Content.Split(new string[] { ":<br/>" }, StringSplitOptions.RemoveEmptyEntries);
+                                    Console.WriteLine(contactDict[item.FromUserName].NickName + "：" + contactDict[item.FromUserName].MemberDict[content[0]].NickName + "：" + content[1]);
+                                }
+                                else
+                                {
+                                    Console.WriteLine(contactDict[item.FromUserName].NickName + "：" + item.Content);
+                                }
                             }
                             else
                             {
-                                Console.WriteLine(contactDict[item.FromUserName].NickName + "：" + item.Content);
+                                //不包含（一般为群）则需要我们主动拉取信息
+                                client.GetBatchGetContactAsync(item.FromUserName);
                             }
-                        }
-                        else
-                        {
-                            //不包含（一般为群）则需要我们主动拉取信息
-                            client.GetBatchGetContactAsync(item.FromUserName);
-                        }
 
-                        //自动回复
-                        if (item.Content == "666666")
-                        {
-                            client.SendMsgAsync("双击666！", item.FromUserName);
-                        }
-                        break;
-                    case MsgType.MM_DATA_HTML:
-                        break;
-                    case MsgType.MM_DATA_IMG:
-                        break;
-                    case MsgType.MM_DATA_PRIVATEMSG_TEXT:
-                        break;
-                    case MsgType.MM_DATA_PRIVATEMSG_HTML:
-                        break;
-                    case MsgType.MM_DATA_PRIVATEMSG_IMG:
-                        break;
-                    case MsgType.MM_DATA_VOICEMSG:
-                        break;
-                    case MsgType.MM_DATA_PUSHMAIL:
-                        break;
-                    case MsgType.MM_DATA_QMSG:
-                        break;
-                    case MsgType.MM_DATA_VERIFYMSG:
-                        //自动加好友，日限额80个左右，请勿超限额多次调用，有封号风险
-                        client.VerifyUser(item.RecommendInfo);
-                        break;
-                    case MsgType.MM_DATA_PUSHSYSTEMMSG:
-                        break;
-                    case MsgType.MM_DATA_QQLIXIANMSG_IMG:
-                        break;
-                    case MsgType.MM_DATA_POSSIBLEFRIEND_MSG:
-                        break;
-                    case MsgType.MM_DATA_SHARECARD:
-                        break;
-                    case MsgType.MM_DATA_VIDEO:
-                        break;
-                    case MsgType.MM_DATA_VIDEO_IPHONE_EXPORT:
-                        break;
-                    case MsgType.MM_DATA_EMOJI:
-                        break;
-                    case MsgType.MM_DATA_LOCATION:
-                        break;
-                    case MsgType.MM_DATA_APPMSG:
-                        break;
-                    case MsgType.MM_DATA_VOIPMSG:
-                        break;
-                    case MsgType.MM_DATA_STATUSNOTIFY:
-                        switch (item.StatusNotifyCode)
-                        {
-                            case StatusNotifyCode.StatusNotifyCode_READED:
-                                break;
-                            case StatusNotifyCode.StatusNotifyCode_ENTER_SESSION:
-                                break;
-                            case StatusNotifyCode.StatusNotifyCode_INITED:
-                                break;
-                            case StatusNotifyCode.StatusNotifyCode_SYNC_CONV:
-                                //初始化的时候第一次sync会返回最近聊天的列表
-                                client.GetBatchGetContactAsync(item.StatusNotifyUserName);
-                                break;
-                            case StatusNotifyCode.StatusNotifyCode_QUIT_SESSION:
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case MsgType.MM_DATA_VOIPNOTIFY:
-                        break;
-                    case MsgType.MM_DATA_VOIPINVITE:
-                        break;
-                    case MsgType.MM_DATA_MICROVIDEO:
-                        break;
-                    case MsgType.MM_DATA_SYSNOTICE:
-                        break;
-                    case MsgType.MM_DATA_SYS:
-                        //系统消息提示，例如完成好友验证通过，建群等等，提示消息“以已经通过了***的朋友验证请求，现在可以开始聊天了”、“加入了群聊”
-                        //不在字典，说明是新增，我们就主动拉取加入联系人字典
-                        if (!contactDict.Keys.Contains(item.FromUserName))
-                        {
-                            client.GetBatchGetContactAsync(item.FromUserName);
-                        }
-                        break;
-                    case MsgType.MM_DATA_RECALLED:
-                        break;
-                    default:
-                        break;
+                            //自动回复
+                            if (item.Content == "666666")
+                            {
+                                client.SendMsgAsync("双击666！", item.FromUserName);
+                            }
+                            break;
+                        case MsgType.MM_DATA_HTML:
+                            break;
+                        case MsgType.MM_DATA_IMG:
+                            break;
+                        case MsgType.MM_DATA_PRIVATEMSG_TEXT:
+                            break;
+                        case MsgType.MM_DATA_PRIVATEMSG_HTML:
+                            break;
+                        case MsgType.MM_DATA_PRIVATEMSG_IMG:
+                            break;
+                        case MsgType.MM_DATA_VOICEMSG:
+                            break;
+                        case MsgType.MM_DATA_PUSHMAIL:
+                            break;
+                        case MsgType.MM_DATA_QMSG:
+                            break;
+                        case MsgType.MM_DATA_VERIFYMSG:
+                            //自动加好友，日限额80个左右，请勿超限额多次调用，有封号风险
+                            //client.VerifyUser(item.RecommendInfo);
+                            break;
+                        case MsgType.MM_DATA_PUSHSYSTEMMSG:
+                            break;
+                        case MsgType.MM_DATA_QQLIXIANMSG_IMG:
+                            break;
+                        case MsgType.MM_DATA_POSSIBLEFRIEND_MSG:
+                            break;
+                        case MsgType.MM_DATA_SHARECARD:
+                            break;
+                        case MsgType.MM_DATA_VIDEO:
+                            break;
+                        case MsgType.MM_DATA_VIDEO_IPHONE_EXPORT:
+                            break;
+                        case MsgType.MM_DATA_EMOJI:
+                            break;
+                        case MsgType.MM_DATA_LOCATION:
+                            break;
+                        case MsgType.MM_DATA_APPMSG:
+                            break;
+                        case MsgType.MM_DATA_VOIPMSG:
+                            break;
+                        case MsgType.MM_DATA_STATUSNOTIFY:
+                            switch (item.StatusNotifyCode)
+                            {
+                                case StatusNotifyCode.StatusNotifyCode_READED:
+                                    break;
+                                case StatusNotifyCode.StatusNotifyCode_ENTER_SESSION:
+                                    break;
+                                case StatusNotifyCode.StatusNotifyCode_INITED:
+                                    break;
+                                case StatusNotifyCode.StatusNotifyCode_SYNC_CONV:
+                                    //初始化的时候第一次sync会返回最近聊天的列表
+                                    client.GetBatchGetContactAsync(item.StatusNotifyUserName);
+                                    break;
+                                case StatusNotifyCode.StatusNotifyCode_QUIT_SESSION:
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        case MsgType.MM_DATA_VOIPNOTIFY:
+                            break;
+                        case MsgType.MM_DATA_VOIPINVITE:
+                            break;
+                        case MsgType.MM_DATA_MICROVIDEO:
+                            break;
+                        case MsgType.MM_DATA_SYSNOTICE:
+                            break;
+                        case MsgType.MM_DATA_SYS:
+                            //系统消息提示，例如完成好友验证通过，建群等等，提示消息“以已经通过了***的朋友验证请求，现在可以开始聊天了”、“加入了群聊”
+                            //不在字典，说明是新增，我们就主动拉取加入联系人字典
+                            if (!contactDict.Keys.Contains(item.FromUserName))
+                            {
+                                client.GetBatchGetContactAsync(item.FromUserName);
+                            }
+                            break;
+                        case MsgType.MM_DATA_RECALLED:
+                            break;
+                        default:
+                            break;
+                    }
                 }
+            }
+            catch (Exception err)
+            {
+                Console.WriteLine("异常：" + err.Message);
             }
         }
 
@@ -260,11 +268,18 @@ namespace Test
 
         private static void Client_LoginComplete(object sender, TEventArgs<User> e)
         {
+            string cookie = (string)sender.GetType().GetMethod("GetLastCookie").Invoke(sender, null);
             Console.WriteLine("登陆成功：" + e.Result.NickName);
-            qrForm.Invoke(new Action(() =>
+            Console.WriteLine("========你可以将登录信息保存，下次登录可以不用扫描二维码了。。。========");
+            System.Diagnostics.Debug.WriteLine(cookie);
+            try
             {
-                qrForm.Close();
-            }));
+                qrForm.Invoke(new Action(() =>
+                {
+                    qrForm.Close();
+                }));
+            }
+            catch { }
         }
 
         private static void Client_CheckScanComplete(object sender, TEventArgs<System.Drawing.Image> e)
@@ -277,6 +292,7 @@ namespace Test
         {
             Console.WriteLine("已获取登陆二维码");
             qrForm.SetPic(e.Result);
+            qrForm.ShowDialog();
         }
 
         private static void Client_ExceptionCatched(object sender, TEventArgs<Exception> e)
