@@ -156,15 +156,15 @@ namespace Leestar54.WeChat.WebAPI
             source = new CancellationTokenSource();
             factory = new TaskFactory(source.Token);
         }
-
         /// <summary>
         /// 启动客户端
         /// </summary>
-        public void Start()
+        /// <param name="lastCookie">上次保留的登录信息。</param>
+        public void Start(string lastCookie = null)
         {
             if (syncPolling != false)
             {
-                factory.StartNew(() => GetLoginQrCode())
+                factory.StartNew(() => { if (!AutoLogin(lastCookie)) GetLoginQrCode(); })
                     .ContinueWith((antecedent) => CheckSacnLogin(), source.Token, TaskContinuationOptions.NotOnFaulted, TaskScheduler.Default)
                     .ContinueWith((antecedent) => Init(), source.Token, TaskContinuationOptions.NotOnFaulted, TaskScheduler.Default)
                     .ContinueWith((antecedent) => StatusNotify(), source.Token, TaskContinuationOptions.NotOnFaulted, TaskScheduler.Default)
@@ -175,6 +175,41 @@ namespace Leestar54.WeChat.WebAPI
             {
                 throw new ObjectDisposedException("Client", "客户端已经登出释放，请重新实例化。");
             }
+        }
+        /// <summary>
+        /// 尝试自动登录
+        /// </summary>
+        /// <param name="lastCookie">上次保留的登录信息。</param>
+        /// <returns></returns>
+        private bool AutoLogin(string lastCookie)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(lastCookie)) return false;
+
+                string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxpushloginurl?uin=";
+                httpClient.CookieContainer.SetCookies(new Uri(url), lastCookie.Replace(";", ","));
+                string uin = httpClient.CookieContainer.GetCookies(new Uri(url))["wxuin"].Value;
+                if (string.IsNullOrEmpty(uin)) return false;
+
+                string result = httpClient.GetString(url + uin);
+                JObject o = (JObject)JsonConvert.DeserializeObject(result);
+                if (o["ret"].ToString() != "0") return false;
+                uuid = o["uuid"].ToString();
+
+                return true;
+            }
+            catch { return false; }
+        }
+        /// <summary>
+        /// 获取新的的登录信息。
+        /// </summary>
+        /// <returns></returns>
+        public string GetLastCookie()
+        {
+            var cookies = httpClient.CookieContainer.GetCookies(new Uri(host));
+            return $"ptui_loginuin=12345678;last_wxuin={cookies["wxuin"].Value};wxuin={cookies["wxuin"].Value};" +
+                $"webwxuvid={cookies["webwxuvid"].Value}; webwx_auth_ticket={cookies["webwx_auth_ticket"].Value}";
         }
 
         /// <summary>
