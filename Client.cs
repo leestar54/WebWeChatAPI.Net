@@ -187,7 +187,7 @@ namespace Leestar54.WeChat.WebAPI
             {
                 if (string.IsNullOrEmpty(lastCookie)) return false;
 
-                string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxpushloginurl?uin=";
+                string url = host + "/cgi-bin/mmwebwx-bin/webwxpushloginurl?uin=";
                 httpClient.CookieContainer.SetCookies(new Uri(url), lastCookie.Replace(";", ","));
                 string uin = httpClient.CookieContainer.GetCookies(new Uri(url))["wxuin"].Value;
                 if (string.IsNullOrEmpty(uin)) return false;
@@ -208,7 +208,7 @@ namespace Leestar54.WeChat.WebAPI
         public string GetLastCookie()
         {
             var cookies = httpClient.CookieContainer.GetCookies(new Uri(host));
-            return $"ptui_loginuin=12345678;last_wxuin={cookies["wxuin"].Value};wxuin={cookies["wxuin"].Value};" +
+            return $"last_wxuin={cookies["wxuin"].Value};wxuin={cookies["wxuin"].Value};" +
                 $"webwxuvid={cookies["webwxuvid"].Value}; webwx_auth_ticket={cookies["webwx_auth_ticket"].Value}";
         }
 

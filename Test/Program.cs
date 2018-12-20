@@ -19,6 +19,7 @@ namespace Test
         private static Client client;
         private static Dictionary<string, Contact> contactDict = new Dictionary<string, Contact>();
         private static QrCodeForm qrForm;
+        private static string cookiePath = AppDomain.CurrentDomain.BaseDirectory + "autoLoginCookie";
         [STAThread]
         static void Main(string[] args)
         {
@@ -27,7 +28,16 @@ namespace Test
 
             client = new Client();
             qrForm = new QrCodeForm();
-            string cookie = @"ptui_loginuin=12345678;last_wxuin=****;wxuin=****;webwxuvid=****; webwx_auth_ticket=****";
+
+            string cookie = null;
+            //获取登陆之后记录的cookie，实现推送手机端登陆，取代扫码
+            //若不需要，注释掉以下代码即可
+            if (File.Exists(cookiePath))
+            {
+                StreamReader sr = new StreamReader(cookiePath, Encoding.Default);
+                cookie = sr.ReadLine();
+                sr.Close();
+            }
 
             client.ExceptionCatched += Client_ExceptionCatched; ;
             client.GetLoginQrCodeComplete += Client_GetLoginQrCodeComplete; ;
@@ -268,10 +278,13 @@ namespace Test
 
         private static void Client_LoginComplete(object sender, TEventArgs<User> e)
         {
-            string cookie = (string)sender.GetType().GetMethod("GetLastCookie").Invoke(sender, null);
+            string cookie = client.GetLastCookie();
             Console.WriteLine("登陆成功：" + e.Result.NickName);
-            Console.WriteLine("========你可以将登录信息保存，下次登录可以不用扫描二维码了。。。========");
-            System.Diagnostics.Debug.WriteLine(cookie);
+            Console.WriteLine("========已记录cookie，下次登陆将推送提醒至手机，取代扫码========");
+            using (StreamWriter sw = new StreamWriter(cookiePath,false))
+            {
+                sw.WriteLine(cookie);
+            }
             try
             {
                 qrForm.Invoke(new Action(() =>
